@@ -1,7 +1,8 @@
 package main
 
 import (
-	"errors"
+	"franciscolarrocca/client/app/circuit_breaker"
+	"franciscolarrocca/client/app/custom_errors"
 	"log"
 	"net/http"
 	"time"
@@ -10,7 +11,7 @@ import (
 func main() {
 	failureThreshold := 2
 	timeout := 5 * time.Second
-	circuitBreaker := NewCircuitBreaker(failureThreshold, timeout)
+	circuitBreaker := circuit_breaker.New(failureThreshold, timeout)
 
 	for i := 0; i < 15; i++ {
 		if err := circuitBreaker.Call(doRequest); err != nil {
@@ -25,10 +26,20 @@ func main() {
 func doRequest() error {
 	resp, err := http.Get("http://server:8080/data")
 	if err != nil {
-		return err
+		if custom_errors.Is5xxError(resp.StatusCode) {
+			return &custom_errors.HttpServerError{
+				Status:  resp.StatusCode,
+				Message: err.Error(),
+			}
+		}
+
+		if custom_errors.Is4xxError(resp.StatusCode) {
+			return &custom_errors.HttpClientError{
+				Status:  resp.StatusCode,
+				Message: err.Error(),
+			}
+		}
 	}
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("server error")
-	}
+
 	return nil
 }
