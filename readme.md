@@ -40,8 +40,8 @@ The logs will show the status of requests from the client to the server. When th
 ```bash
 2024-08-25 21:30:15 server  | server running on port 8080
 2024-08-25 21:30:15 client  | 2024/08/26 00:30:15 result: successful 
-2024-08-25 21:30:16 client  | 2024/08/26 00:30:16 result: server error 
-2024-08-25 21:30:17 client  | 2024/08/26 00:30:17 result: server error 
+2024-08-25 21:30:16 client  | 2024/08/26 00:30:16 result: an HTTP server error ocurred: '503: 503 Service Unavailable'
+2024-08-25 21:30:17 client  | 2024/08/26 00:30:17 result: an HTTP server error ocurred: '503: 503 Service Unavailable' 
 2024-08-25 21:30:18 client  | 2024/08/26 00:30:18 result: circuit breaker is OPEN waiting 5sec 
 2024-08-25 21:30:19 client  | 2024/08/26 00:30:19 result: circuit breaker is OPEN waiting 5sec 
 2024-08-25 21:30:20 client  | 2024/08/26 00:30:20 result: circuit breaker is OPEN waiting 5sec 
