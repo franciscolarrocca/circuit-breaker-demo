@@ -14,8 +14,9 @@ func main() {
 	circuitBreaker := circuit_breaker.New(failureThreshold, timeout)
 
 	for i := 0; i < 15; i++ {
-		if err := circuitBreaker.Call(doRequest); err != nil {
-			log.Printf("result: %s \n", err)
+		excludedErrors := []error{&custom_errors.HttpClientError{}}
+		if err := circuitBreaker.CallWithExcludedErrors(doRequest, excludedErrors); err != nil {
+			log.Printf("result: %s \n", err.Error())
 		} else {
 			log.Printf("result: successful \n")
 		}
@@ -26,18 +27,20 @@ func main() {
 func doRequest() error {
 	resp, err := http.Get("http://server:8080/data")
 	if err != nil {
-		if custom_errors.Is5xxError(resp.StatusCode) {
-			return &custom_errors.HttpServerError{
-				Status:  resp.StatusCode,
-				Message: err.Error(),
-			}
-		}
+		return err
+	}
 
-		if custom_errors.Is4xxError(resp.StatusCode) {
-			return &custom_errors.HttpClientError{
-				Status:  resp.StatusCode,
-				Message: err.Error(),
-			}
+	if custom_errors.Is5xxError(resp.StatusCode) {
+		return &custom_errors.HttpServerError{
+			Status:  resp.StatusCode,
+			Message: resp.Status,
+		}
+	}
+
+	if custom_errors.Is4xxError(resp.StatusCode) {
+		return &custom_errors.HttpClientError{
+			Status:  resp.StatusCode,
+			Message: resp.Status,
 		}
 	}
 
